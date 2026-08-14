@@ -16,9 +16,17 @@ class NotificationService {
 
   static String buildAlertMessage(String senderName, String type) {
     final safeSender = senderName.trim().isEmpty ? 'Someone' : senderName.trim();
-    return type == 'like'
-        ? '$safeSender liked your post'
-        : '$safeSender commented on your post';
+
+    switch (type) {
+      case 'like':
+        return '$safeSender liked your post';
+      case 'comment':
+        return '$safeSender commented on your post';
+      case 'post':
+        return '$safeSender shared a new post';
+      default:
+        return '$safeSender interacted with your post';
+    }
   }
 
   static bool shouldTriggerLocalAlert({

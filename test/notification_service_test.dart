@@ -16,6 +16,13 @@ void main() {
     );
   });
 
+  test('builds a new post notification message', () {
+    expect(
+      NotificationService.buildAlertMessage('Aisha', 'post'),
+      'Aisha shared a new post',
+    );
+  });
+
   test('only triggers for the matching recipient user', () {
     expect(
       NotificationService.shouldTriggerLocalAlert(
