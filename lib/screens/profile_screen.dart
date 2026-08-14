@@ -79,6 +79,68 @@ class ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final authController = context.read<AuthController>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text(
+          'Are you sure you want to log out from your account?',
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        actions: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Logout'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 40,
+                child: TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final navigator = Navigator.of(context);
+    await authController.logout();
+
+    if (!mounted) return;
+
+    navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final userCtrl = context.watch<UserController>();
@@ -141,18 +203,51 @@ class ProfileScreenState extends State<ProfileScreen> {
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
           if (isOwnProfile)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () async {
-                // Return value check karke refresh karenge
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-                );
-                if (result == true) {
-                  _loadProfile();
+            PopupMenuButton<String>(
+              tooltip: 'Profile options',
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) async {
+                final navigator = Navigator.of(context);
+
+                if (value == 'edit_profile') {
+                  final result = await navigator.push(
+                    MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                  );
+                  if (result == true && mounted) {
+                    _loadProfile();
+                  }
+                  return;
+                }
+
+                if (value == 'logout') {
+                  await _showLogoutDialog(context);
                 }
               },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit_profile',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined),
+                      SizedBox(width: 12),
+                      Text('Edit Profile'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.red),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
         ],
       ),

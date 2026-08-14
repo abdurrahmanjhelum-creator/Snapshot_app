@@ -712,6 +712,46 @@ class ApiService {
     });
   }
 
+  // -------------------- Notifications --------------------
+
+  static Future<http.Response> getNotifications() async {
+    return _authenticatedRequest(() async {
+      try {
+        final response = await http
+            .get(
+              Uri.parse('$baseUrl/notifications'),
+              headers: await _getHeaders(),
+            )
+            .timeout(const Duration(seconds: 10));
+
+        _validateResponse(response);
+        return response;
+      } catch (e) {
+        if (e is FormatException) rethrow;
+        throw Exception('Network error: $e');
+      }
+    });
+  }
+
+  static Future<http.Response> markNotificationsAsRead() async {
+    return _authenticatedRequest(() async {
+      try {
+        final response = await http
+            .patch(
+              Uri.parse('$baseUrl/notifications/read'),
+              headers: await _getHeaders(),
+            )
+            .timeout(const Duration(seconds: 10));
+
+        _validateResponse(response);
+        return response;
+      } catch (e) {
+        if (e is FormatException) rethrow;
+        throw Exception('Network error: $e');
+      }
+    });
+  }
+
   // -------------------- Search --------------------
 
   static Future<http.Response> searchPosts(String query) async {

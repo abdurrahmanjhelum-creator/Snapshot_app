@@ -31,7 +31,7 @@ class _FeedScreenState extends State<FeedScreen> {
       appBar: AppBar(
         // Instagram title styled slightly
         title: const Text(
-          'Instagram',
+          'Snapshot',
           style: TextStyle(
             fontFamily: 'Billabong', 
             fontSize: 32,
