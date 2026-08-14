@@ -51,6 +51,20 @@ class SocketService {
     }
   }
 
+  void joinUser(String userId) {
+    if (_socket != null && _socket!.connected) {
+      _socket!.emit('join-user', userId);
+      debugPrint('Joined user room: $userId');
+    }
+  }
+
+  void leaveUser(String userId) {
+    if (_socket != null && _socket!.connected) {
+      _socket!.emit('leave-user', userId);
+      debugPrint('Left user room: $userId');
+    }
+  }
+
   void joinPost(String postId) {
     if (_socket != null && _socket!.connected) {
       _socket!.emit('join-post', postId);

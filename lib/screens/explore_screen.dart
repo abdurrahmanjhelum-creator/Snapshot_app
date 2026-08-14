@@ -9,7 +9,6 @@ import '../controllers/auth_controller.dart';
 import '../models/post.dart';
 import '../services/api_service.dart';
 import '../widgets/post_grid_item.dart';
-import 'user_profile_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});

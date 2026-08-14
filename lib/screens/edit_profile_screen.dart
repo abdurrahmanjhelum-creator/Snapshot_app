@@ -50,11 +50,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     setState(() => _isSaving = true);
-    
+
     final userCtrl = context.read<UserController>();
     final authCtrl = context.read<AuthController>();
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final navigator = Navigator.of(context);
 
-    // API call through controller
     final error = await userCtrl.updateProfile(
       username: _usernameCtrl.text.trim(),
       bio: _bioCtrl.text.trim(),
@@ -66,15 +67,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isSaving = false);
 
     if (error == null) {
-      // Success: Refresh local auth user data and pop
       await authCtrl.refreshUser();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Colors.green),
+      if (!mounted) return;
+
+      messenger?.showSnackBar(
+        const SnackBar(
+          content: Text('Profile updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
-      Navigator.pop(context, true);
+      navigator.pop(true);
     } else {
-      // Error show karna
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      messenger?.showSnackBar(
         SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
     }

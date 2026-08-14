@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
-import 'controllers/notification_controller.dart';
 import 'controllers/post_controller.dart';
 import 'controllers/user_controller.dart';
+import 'services/notification_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await NotificationService.instance.initialize();
+
   runApp(const MyApp());
 }
 
@@ -22,7 +26,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => PostController()),
         ChangeNotifierProvider(create: (_) => UserController()),
-        ChangeNotifierProvider(create: (_) => NotificationController()),
       ],
       child: MaterialApp(
         title: 'SocialSnap',

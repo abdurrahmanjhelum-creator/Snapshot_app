@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
+import '../services/socket_service.dart';
 import '../models/user.dart';
 
 class AuthController extends ChangeNotifier {
@@ -29,6 +31,10 @@ class AuthController extends ChangeNotifier {
         final accessToken = data['accessToken'];
         await ApiService.saveAccessToken(accessToken);
         _user = User.fromJson(data['user']);
+        NotificationService.setCurrentUserId(_user?.id);
+        final socketService = SocketService();
+        socketService.connect();
+        socketService.joinUser(_user!.id);
         _isLoading = false;
         notifyListeners();
         return null;
@@ -92,6 +98,10 @@ class AuthController extends ChangeNotifier {
       final data = jsonDecode(res.body);
       if (res.statusCode == 200) {
         _user = User.fromJson(data['user']);
+        NotificationService.setCurrentUserId(_user?.id);
+        final socketService = SocketService();
+        socketService.connect();
+        socketService.joinUser(_user!.id);
         notifyListeners();
       }
     } catch (e) {
@@ -102,7 +112,11 @@ class AuthController extends ChangeNotifier {
   // Logout
   Future<void> logout() async {
     await ApiService.logout();
+    if (_user != null) {
+      SocketService().leaveUser(_user!.id);
+    }
     _user = null;
+    NotificationService.setCurrentUserId(null);
     notifyListeners();
   }
 

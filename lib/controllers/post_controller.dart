@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
 import '../services/socket_service.dart';
 import '../models/post.dart';
 
@@ -23,6 +24,23 @@ class PostController extends ChangeNotifier {
 
   void _initializeSocket() {
     _socketService.connect();
+
+    _socketService.on('notification-added', (data) {
+      final recipientId = data['recipientId']?.toString();
+      final senderName = data['senderName']?.toString() ?? 'Someone';
+      final type = data['type']?.toString() ?? 'like';
+
+      if (NotificationService.shouldTriggerLocalAlert(
+        currentUserId: NotificationService.currentUserId,
+        recipientId: recipientId,
+      )) {
+        NotificationService.instance.showLikeOrCommentAlert(
+          senderName: senderName,
+          type: type,
+          recipientId: recipientId,
+        );
+      }
+    });
 
     // Listen for like added events
     _socketService.on('like-added', (data) {

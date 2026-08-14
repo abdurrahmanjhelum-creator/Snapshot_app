@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'feed_screen.dart';
 import 'explore_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'create_post_screen.dart';
-import '../controllers/auth_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
