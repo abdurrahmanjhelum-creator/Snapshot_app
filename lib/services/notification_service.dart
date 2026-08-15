@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
@@ -38,11 +39,29 @@ class NotificationService {
   }
 
   Future<void> initialize() async {
+    // Android configuration
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettings = InitializationSettings(android: androidSettings);
+    
+    // iOS configuration with permission handling
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
-    await _notificationsPlugin.initialize(settings: initializationSettings);
+    const initializationSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+    );
 
+    await _notificationsPlugin.initialize(
+      settings: initializationSettings,
+    );
+
+    // Request iOS notification permissions
+    await _requestIOSPermissions();
+
+    // Create Android notification channel
     final androidPlugin = _notificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
@@ -56,6 +75,27 @@ class NotificationService {
         enableVibration: true,
       ),
     );
+
+    debugPrint('✅ Notification service initialized successfully');
+  }
+
+  Future<void> _requestIOSPermissions() async {
+    final iosPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+
+    if (iosPlugin != null) {
+      final granted = await iosPlugin.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      
+      if (granted != null && granted) {
+        debugPrint('✅ iOS notification permissions granted');
+      } else {
+        debugPrint('⚠️ iOS notification permissions denied or not requested');
+      }
+    }
   }
 
   Future<void> showNotification({
@@ -63,6 +103,7 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    // Android notification configuration
     final androidDetails = AndroidNotificationDetails(
       'socialsnap_notifications',
       'SocialSnap Notifications',
@@ -75,20 +116,33 @@ class NotificationService {
       visibility: NotificationVisibility.public,
     );
 
-    const iosDetails = DarwinNotificationDetails();
+    // iOS notification configuration
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'default',
+      badgeNumber: 1,
+      threadIdentifier: 'socialsnap_notifications',
+    );
 
     final notificationDetails = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
 
-    await _notificationsPlugin.show(
-      id: id,
-      title: title,
-      body: body,
-      payload: 'socialsnap_notification',
-      notificationDetails: notificationDetails,
-    );
+    try {
+      await _notificationsPlugin.show(
+        id: id,
+        title: title,
+        body: body,
+        payload: 'socialsnap_notification',
+        notificationDetails: notificationDetails,
+      );
+      debugPrint('✅ Notification displayed: $title - $body');
+    } catch (e) {
+      debugPrint('❌ Error showing notification: $e');
+    }
   }
 
   Future<void> triggerInteractionAlert({
